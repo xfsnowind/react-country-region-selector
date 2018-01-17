@@ -1176,8 +1176,6 @@ var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_ag
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
@@ -1209,7 +1207,8 @@ var CountryDropdown = (function (_React$Component) {
 
     _get(Object.getPrototypeOf(CountryDropdown.prototype), 'constructor', this).call(this, props);
     this.state = {
-      countries: _filterCountries(_sourceDataJs2['default'], props.whitelist, props.blacklist, props.mainOptions)
+      countries: _filterCountries(_sourceDataJs2['default'], props.whitelist, props.blacklist),
+      priorCountries: _priorCountries(_sourceDataJs2['default'], props.priorlist)
     };
   }
 
@@ -1234,31 +1233,82 @@ var CountryDropdown = (function (_React$Component) {
       });
     }
   }, {
+    key: 'getPriorCountries',
+    value: function getPriorCountries() {
+      var _props2 = this.props;
+      var valueType = _props2.valueType;
+      var labelType = _props2.labelType;
+
+      if (this.state.priorCountries.length > 0) {
+        return this.state.priorCountries.map(function (_ref3) {
+          var _ref32 = _slicedToArray(_ref3, 2);
+
+          var countryName = _ref32[0];
+          var countrySlug = _ref32[1];
+
+          return _react2['default'].createElement(
+            'option',
+            { value: valueType === C.DISPLAY_TYPE_SHORT ? countrySlug : countryName, key: countrySlug },
+            labelType === C.DISPLAY_TYPE_SHORT ? countrySlug : countryName
+          );
+        });
+      }
+      return null;
+    }
+  }, {
+    key: 'getPriorSeparator',
+    value: function getPriorSeparator() {
+      if (this.state.priorCountries.length > 0) {
+        return _react2['default'].createElement(
+          'option',
+          { value: 'separator', disabled: true },
+          '--------------------'
+        );
+      }
+      return null;
+    }
+  }, {
     key: 'getDefaultOption',
     value: function getDefaultOption() {
-      var _props2 = this.props;
-      var showDefaultOption = _props2.showDefaultOption;
-      var defaultOptionLabel = _props2.defaultOptionLabel;
+      var _props3 = this.props;
+      var showDefaultOption = _props3.showDefaultOption;
+      var defaultOptionLabel = _props3.defaultOptionLabel;
 
       if (!showDefaultOption) {
         return null;
       }
       return _react2['default'].createElement(
         'option',
-        { value: '', key: 'default' },
+        { value: '', key: 'default', disabled: true },
         defaultOptionLabel
+      );
+    }
+  }, {
+    key: 'getPriorityOption',
+    value: function getPriorityOption() {
+      var _props4 = this.props;
+      var priorListLabel = _props4.priorListLabel;
+      var showPriorListLabel = _props4.showPriorListLabel;
+
+      if (!showPriorListLabel) {
+        return null;
+      }
+      return _react2['default'].createElement(
+        'option',
+        { value: '', disabled: true },
+        priorListLabel
       );
     }
   }, {
     key: 'render',
     value: function render() {
-      var _props3 = this.props;
-      var name = _props3.name;
-      var id = _props3.id;
-      var classes = _props3.classes;
-      var value = _props3.value;
-      var _onChange = _props3.onChange;
-      var disabled = _props3.disabled;
+      var _props5 = this.props;
+      var name = _props5.name;
+      var id = _props5.id;
+      var classes = _props5.classes;
+      var value = _props5.value;
+      var _onChange = _props5.onChange;
+      var disabled = _props5.disabled;
 
       var attrs = {
         name: name,
@@ -1279,6 +1329,9 @@ var CountryDropdown = (function (_React$Component) {
         'select',
         attrs,
         this.getDefaultOption(),
+        this.getPriorityOption(),
+        this.getPriorCountries(),
+        this.getPriorSeparator(),
         this.getCountries()
       );
     }
@@ -1291,13 +1344,15 @@ CountryDropdown.propTypes = {
   value: _propTypes2['default'].oneOfType([_propTypes2['default'].string, _propTypes2['default'].number]),
   name: _propTypes2['default'].string,
   id: _propTypes2['default'].string,
-  mainOptions: _propTypes2['default'].array,
   classes: _propTypes2['default'].string,
   showDefaultOption: _propTypes2['default'].bool,
   defaultOptionLabel: _propTypes2['default'].oneOfType([_propTypes2['default'].string, _propTypes2['default'].number]),
+  showPriorListLabel: _propTypes2['default'].bool,
+  priorListLabel: _propTypes2['default'].oneOfType([_propTypes2['default'].string, _propTypes2['default'].number]),
   onChange: _propTypes2['default'].func,
   labelType: _propTypes2['default'].oneOf([C.DISPLAY_TYPE_FULL, C.DISPLAY_TYPE_SHORT]),
   valueType: _propTypes2['default'].oneOf([C.DISPLAY_TYPE_FULL, C.DISPLAY_TYPE_SHORT]),
+  priorlist: _propTypes2['default'].array,
   whitelist: _propTypes2['default'].array,
   blacklist: _propTypes2['default'].array,
   disabled: _propTypes2['default'].bool
@@ -1312,7 +1367,9 @@ CountryDropdown.defaultProps = {
   onChange: function onChange() {},
   labelType: C.DISPLAY_TYPE_FULL,
   valueType: C.DISPLAY_TYPE_FULL,
-  mainOptions: [],
+  showPriorListLabel: false,
+  priorListLabel: "Priority Countries",
+  priorlist: [],
   whitelist: [],
   blacklist: [],
   disabled: false
@@ -1381,13 +1438,13 @@ var RegionDropdown = (function (_React$Component2) {
   }, {
     key: 'getRegionList',
     value: function getRegionList() {
-      var _props4 = this.props;
-      var labelType = _props4.labelType;
-      var valueType = _props4.valueType;
+      var _props6 = this.props;
+      var labelType = _props6.labelType;
+      var valueType = _props6.valueType;
 
-      return this.state.regions.map(function (_ref3) {
-        var regionName = _ref3.regionName;
-        var regionShortCode = _ref3.regionShortCode;
+      return this.state.regions.map(function (_ref4) {
+        var regionName = _ref4.regionName;
+        var regionShortCode = _ref4.regionShortCode;
 
         var label = labelType === C.DISPLAY_TYPE_FULL ? regionName : regionShortCode;
         var value = valueType === C.DISPLAY_TYPE_FULL ? regionName : regionShortCode;
@@ -1404,11 +1461,11 @@ var RegionDropdown = (function (_React$Component2) {
   }, {
     key: 'getDefaultOption',
     value: function getDefaultOption() {
-      var _props5 = this.props;
-      var blankOptionLabel = _props5.blankOptionLabel;
-      var showDefaultOption = _props5.showDefaultOption;
-      var defaultOptionLabel = _props5.defaultOptionLabel;
-      var country = _props5.country;
+      var _props7 = this.props;
+      var blankOptionLabel = _props7.blankOptionLabel;
+      var showDefaultOption = _props7.showDefaultOption;
+      var defaultOptionLabel = _props7.defaultOptionLabel;
+      var country = _props7.country;
 
       if (!country) {
         return _react2['default'].createElement(
@@ -1429,15 +1486,15 @@ var RegionDropdown = (function (_React$Component2) {
   }, {
     key: 'render',
     value: function render() {
-      var _props6 = this.props;
-      var value = _props6.value;
-      var country = _props6.country;
-      var _onChange2 = _props6.onChange;
-      var id = _props6.id;
-      var name = _props6.name;
-      var classes = _props6.classes;
-      var disabled = _props6.disabled;
-      var disableWhenEmpty = _props6.disableWhenEmpty;
+      var _props8 = this.props;
+      var value = _props8.value;
+      var country = _props8.country;
+      var _onChange2 = _props8.onChange;
+      var id = _props8.id;
+      var name = _props8.name;
+      var classes = _props8.classes;
+      var disabled = _props8.disabled;
+      var disableWhenEmpty = _props8.disableWhenEmpty;
 
       var isDisabled = disabled || disableWhenEmpty && country == '';
       var attrs = {
@@ -1503,46 +1560,46 @@ RegionDropdown.defaultProps = {
 
 // called on country field initialization. It reduces the subset of countries depending on whether the user
 // specified a white/blacklist
-function _filterCountries(countries, whitelist, blacklist, mainOptions) {
+function _filterCountries(countries, whitelist, blacklist) {
   var filteredCountries = countries;
-  var mainList = [];
 
   // N.B. I'd rather use ES6 array.includes() but it requires a polyfill on various browsers. Bit surprising that
   // babel doesn't automatically convert it to ES5-friendly code, like the new syntax additions, but that requires
   // a separate polyfill which is a total kludge
   if (whitelist.length > 0) {
-    filteredCountries = countries.filter(function (_ref4) {
-      var _ref42 = _slicedToArray(_ref4, 2);
-
-      var countrySlug = _ref42[1];
-      return whitelist.indexOf(countrySlug) > -1;
-    });
-  } else if (blacklist.length > 0) {
     filteredCountries = countries.filter(function (_ref5) {
       var _ref52 = _slicedToArray(_ref5, 2);
 
       var countrySlug = _ref52[1];
+      return whitelist.indexOf(countrySlug) > -1;
+    });
+  } else if (blacklist.length > 0) {
+    filteredCountries = countries.filter(function (_ref6) {
+      var _ref62 = _slicedToArray(_ref6, 2);
+
+      var countrySlug = _ref62[1];
       return blacklist.indexOf(countrySlug) === -1;
     });
   }
 
-  // If the user
-  if (mainOptions.length > 0) {
-    mainList = filteredCountries.filter(function (_ref6) {
-      var _ref62 = _slicedToArray(_ref6, 2);
+  return filteredCountries;
+}
 
-      var countrySlug = _ref62[1];
-      return mainOptions.indexOf(countrySlug) > -1;
-    });
-    filteredCountries = filteredCountries.filter(function (_ref7) {
+function _priorCountries(countries, priorList) {
+  var filteredCountries = countries;
+  var newPriorList = [];
+
+  // If the user
+  if (priorList.length > 0) {
+    newPriorList = filteredCountries.filter(function (_ref7) {
       var _ref72 = _slicedToArray(_ref7, 2);
 
       var countrySlug = _ref72[1];
-      return mainOptions.indexOf(countrySlug) === -1;
+      return priorList.indexOf(countrySlug) > -1;
     });
   }
 
-  return mainOptions.length ? [].concat(_toConsumableArray(mainList), _toConsumableArray(filteredCountries)) : filteredCountries;
+  return priorList.length > 0 ? newPriorList : [];
 }
 
 exports.CountryDropdown = CountryDropdown;

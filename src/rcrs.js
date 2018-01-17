@@ -14,7 +14,8 @@ class CountryDropdown extends React.Component {
   constructor (props) {
     super(props);
     this.state = {
-      countries: _filterCountries(CountryRegionData, props.whitelist, props.blacklist, props.mainOptions)
+      countries: _filterCountries(CountryRegionData, props.whitelist, props.blacklist),
+      priorCountries: _priorCountries(CountryRegionData, props.priorlist)
     };
   }
 
@@ -30,13 +31,45 @@ class CountryDropdown extends React.Component {
     });
   }
 
+  getPriorCountries () {
+    const { valueType, labelType } = this.props;
+
+    if (this.state.priorCountries.length > 0) {
+      return this.state.priorCountries.map(([countryName, countrySlug]) => {
+        return (
+          <option value={(valueType === C.DISPLAY_TYPE_SHORT) ? countrySlug : countryName} key={countrySlug}>
+            {(labelType === C.DISPLAY_TYPE_SHORT) ? countrySlug : countryName}
+          </option>
+        );
+      });
+    }
+    return null;
+  }
+
+  getPriorSeparator () {
+    if (this.state.priorCountries.length > 0) {
+      return (<option value="separator" disabled>--------------------</option>);
+    }
+    return null;
+  }
+
   getDefaultOption () {
     const { showDefaultOption, defaultOptionLabel } = this.props;
     if (!showDefaultOption) {
       return null;
     }
     return (
-      <option value="" key="default">{defaultOptionLabel}</option>
+      <option value="" key="default" disabled>{defaultOptionLabel}</option>
+    );
+  }
+
+  getPriorityOption() {
+    const { priorListLabel, showPriorListLabel } = this.props;
+    if (!showPriorListLabel) {
+      return null;
+    }
+    return (
+      <option value="" disabled>{priorListLabel}</option>
     );
   }
 
@@ -58,22 +91,28 @@ class CountryDropdown extends React.Component {
     return (
       <select {...attrs}>
         {this.getDefaultOption()}
+        {this.getPriorityOption()}
+        {this.getPriorCountries()}
+        {this.getPriorSeparator()}
         {this.getCountries()}
       </select>
     );
   }
 }
+
 CountryDropdown.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   name: PropTypes.string,
   id: PropTypes.string,
-  mainOptions: PropTypes.array,
   classes: PropTypes.string,
   showDefaultOption: PropTypes.bool,
   defaultOptionLabel: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  showPriorListLabel: PropTypes.bool,
+  priorListLabel: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onChange: PropTypes.func,
   labelType: PropTypes.oneOf([C.DISPLAY_TYPE_FULL, C.DISPLAY_TYPE_SHORT]),
   valueType: PropTypes.oneOf([C.DISPLAY_TYPE_FULL, C.DISPLAY_TYPE_SHORT]),
+  priorlist: PropTypes.array,
   whitelist: PropTypes.array,
   blacklist: PropTypes.array,
   disabled: PropTypes.bool
@@ -88,7 +127,9 @@ CountryDropdown.defaultProps = {
   onChange: () => {},
   labelType: C.DISPLAY_TYPE_FULL,
   valueType: C.DISPLAY_TYPE_FULL,
-  mainOptions: [],
+  showPriorListLabel: false,
+  priorListLabel: "Priority Countries",
+  priorlist: [],
   whitelist: [],
   blacklist: [],
   disabled: false
@@ -224,9 +265,8 @@ RegionDropdown.defaultProps = {
 
 // called on country field initialization. It reduces the subset of countries depending on whether the user
 // specified a white/blacklist
-function _filterCountries (countries, whitelist, blacklist, mainOptions) {
+function _filterCountries (countries, whitelist, blacklist) {
   var filteredCountries = countries;
-  var mainList = [];
 
   // N.B. I'd rather use ES6 array.includes() but it requires a polyfill on various browsers. Bit surprising that
   // babel doesn't automatically convert it to ES5-friendly code, like the new syntax additions, but that requires
@@ -237,13 +277,19 @@ function _filterCountries (countries, whitelist, blacklist, mainOptions) {
     filteredCountries = countries.filter(([, countrySlug]) => { return blacklist.indexOf(countrySlug) === -1; });
   }
 
+  return filteredCountries;
+}
+
+function _priorCountries(countries, priorList) {
+  var filteredCountries = countries;
+  var newPriorList = [];
+
   // If the user
-  if (mainOptions.length > 0) {
-    mainList = filteredCountries.filter(([, countrySlug]) => { return mainOptions.indexOf(countrySlug) > -1; });
-    filteredCountries = filteredCountries.filter(([, countrySlug]) => { return mainOptions.indexOf(countrySlug) === -1; });
+  if (priorList.length > 0) {
+    newPriorList = filteredCountries.filter(([, countrySlug]) => { return priorList.indexOf(countrySlug) > -1; });
   }
 
-  return mainOptions.length ? [...mainList, ...filteredCountries] : filteredCountries;
+  return priorList.length > 0 ? newPriorList : [];
 }
 
 

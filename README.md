@@ -199,9 +199,12 @@ define([
 | classes | No | `""` | `string` | Any additional space-separated classes you want to add. |
 | showDefaultOption | No | `true` | `boolean` | Whether you want to show a default option. |
 | defaultOptionLabel | No | `"Select Country"` | `string` | The default option label. |
+| showPriorListLabel | No | `false` | `boolean` | Whether you want to show a priority country label. |
+| priorListLabel | No | `"Priority Countries"`  | `string` | The priority countries label. |
 | labelType | No | `"full"` | `string` | Either `"full"` or `"short"`. This governs whether you see country names or country short codes in the dropdown. |
 | valueType | No | `"full"` | `string` | Either `"full"` or `"short"`. This controls the actual `value` attribute of  each `<option>` in the dropdown. Please note, if you set this to `"short"` you will need to let the corresponding `<RegionDropdown />` component know as well, by passing a `countryValueType="short"` attribute. |
 | whitelist | No | `[]` | `array` | This setting lets you target specific countries to appear in the dropdown. Only those specified here will appear. This should be an array of country shortcodes. See the [country-region-data](https://github.com/benkeen/country-region-data) repo for the data and the shortcodes. |
+| priorlist | No | `[]` | `array` | This setting lets you target prior countries to appear in the top dropdown. Only those specified here will appear. This should be an array of country shortcodes. See the [country-region-data](https://github.com/benkeen/country-region-data) repo for the data and the shortcodes. |
 | blacklist | No | `[]` | `array` | Lets you target countries that should *not* appear in the dropdown. Should also be an array of country shortcodes. |
 | disabled | No | `false` | `boolean` | Disables the country field. |
 
