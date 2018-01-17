@@ -14,7 +14,7 @@ class CountryDropdown extends React.Component {
   constructor (props) {
     super(props);
     this.state = {
-      countries: _filterCountries(CountryRegionData, props.whitelist, props.blacklist)
+      countries: _filterCountries(CountryRegionData, props.whitelist, props.blacklist, props.mainOptions)
     };
   }
 
@@ -67,6 +67,7 @@ CountryDropdown.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   name: PropTypes.string,
   id: PropTypes.string,
+  mainOptions: PropTypes.array,
   classes: PropTypes.string,
   showDefaultOption: PropTypes.bool,
   defaultOptionLabel: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -87,6 +88,7 @@ CountryDropdown.defaultProps = {
   onChange: () => {},
   labelType: C.DISPLAY_TYPE_FULL,
   valueType: C.DISPLAY_TYPE_FULL,
+  mainOptions: [],
   whitelist: [],
   blacklist: [],
   disabled: false
@@ -222,8 +224,9 @@ RegionDropdown.defaultProps = {
 
 // called on country field initialization. It reduces the subset of countries depending on whether the user
 // specified a white/blacklist
-function _filterCountries (countries, whitelist, blacklist) {
+function _filterCountries (countries, whitelist, blacklist, mainOptions) {
   var filteredCountries = countries;
+  var mainList = [];
 
   // N.B. I'd rather use ES6 array.includes() but it requires a polyfill on various browsers. Bit surprising that
   // babel doesn't automatically convert it to ES5-friendly code, like the new syntax additions, but that requires
@@ -234,7 +237,13 @@ function _filterCountries (countries, whitelist, blacklist) {
     filteredCountries = countries.filter(([, countrySlug]) => { return blacklist.indexOf(countrySlug) === -1; });
   }
 
-  return filteredCountries;
+  // If the user
+  if (mainOptions.length > 0) {
+    mainList = filteredCountries.filter(([, countrySlug]) => { return mainOptions.indexOf(countrySlug) > -1; });
+    filteredCountries = filteredCountries.filter(([, countrySlug]) => { return mainOptions.indexOf(countrySlug) === -1; });
+  }
+
+  return mainOptions.length ? [...mainList, ...filteredCountries] : filteredCountries;
 }
 
 
